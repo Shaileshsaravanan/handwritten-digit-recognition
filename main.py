@@ -2,35 +2,42 @@ import numpy as np
 from network import Network
 import mnist
 
-
-# load data
-num_classes = 10
-train_images = mnist.train_images() #[60000, 28, 28]
+# Load data
+train_images = mnist.train_images()  # [60000, 28, 28]
 train_labels = mnist.train_labels()
 test_images = mnist.test_images()
 test_labels = mnist.test_labels()
 
-print("Training...")
+# Constants
+NUM_CLASSES = 10
+INPUT_SHAPE = 784  # 28x28 flattened
+BATCH_SIZE = 32  # Use mini-batch gradient descent for faster training
+EPOCHS = 10  # Increase epochs for better training
+LEARNING_RATE = 0.001
+WEIGHTS_FILE = 'weights.pkl'
 
-# data processing
-X_train = train_images.reshape(train_images.shape[0], train_images.shape[1]*train_images.shape[2]).astype('float32') #flatten 28x28 to 784x1 vectors, [60000, 784]
-x_train = X_train / 255 #normalization
-y_train = np.eye(num_classes)[train_labels] #convert label to one-hot
+# Data processing
+x_train = train_images.reshape(-1, INPUT_SHAPE).astype('float32') / 255.0  # Flatten and normalize
+y_train = np.eye(NUM_CLASSES)[train_labels]  # Convert labels to one-hot encoding
 
-X_test = test_images.reshape(test_images.shape[0], test_images.shape[1]*test_images.shape[2]).astype('float32') #flatten 28x28 to 784x1 vectors, [60000, 784]
-x_test = X_test / 255 #normalization
-y_test = test_labels
+x_test = test_images.reshape(-1, INPUT_SHAPE).astype('float32') / 255.0  # Flatten and normalize
+y_test = np.eye(NUM_CLASSES)[test_labels]  # Convert labels to one-hot encoding
 
+# Initialize and configure the network
 net = Network(
-                 num_nodes_in_layers = [784, 20, 10], 
-                 batch_size = 1,
-                 num_epochs = 5,
-                 learning_rate = 0.001, 
-                 weights_file = 'weights.pkl'
-             )
+    num_nodes_in_layers=[INPUT_SHAPE, 20, NUM_CLASSES], 
+    batch_size=BATCH_SIZE,
+    num_epochs=EPOCHS,
+    learning_rate=LEARNING_RATE, 
+    weights_file=WEIGHTS_FILE
+)
 
+# Train the network
+print("Training...")
 net.train(x_train, y_train)
 
-
+# Test the network
 print("Testing...")
-net.test(x_test, y_test)
+accuracy = net.test(x_test, y_test)
+
+print(f"Test Accuracy: {accuracy * 100:.2f}%")
